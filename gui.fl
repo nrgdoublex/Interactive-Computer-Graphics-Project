@@ -1,0 +1,266 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0304
+header_name {.h}
+code_name {.cxx}
+class MainUI {open
+} {
+  decl {\#include "FrameBufferWrapper.h"} {private local
+  }
+  Function {MainUI()} {open
+  } {
+    Fl_Window uiwindow {
+      label GUI open
+      xywh {475 45 376 603} type Double visible
+    } {
+      Fl_Button {} {
+        label Resize
+        callback {resize()}
+        xywh {5 15 155 50} selection_color 72
+      }
+      Fl_Spinner widthSpinner {
+        label {width:}
+        xywh {240 16 100 24} maximum 10000
+      }
+      Fl_Spinner heightSpinner {
+        label {height:}
+        xywh {240 40 100 24} maximum 10000
+      }
+      Fl_Button {} {
+        label {Set Background}
+        callback {setbgr()}
+        xywh {5 135 155 25}
+      }
+      Fl_Spinner redSpinner {
+        label {Red:}
+        xywh {210 75 50 24} minimum 0 maximum 255 value 255
+      }
+      Fl_Spinner greenSpinner {
+        label {Green:}
+        xywh {315 75 50 24} minimum 0 maximum 255 value 0
+      }
+      Fl_Spinner blueSpinner {
+        label {Blue:}
+        xywh {210 101 50 24} minimum 0 maximum 255 value 0
+      }
+      Fl_Spinner alphaSpinner {
+        label {Alpha:} selected
+        xywh {315 100 50 24} minimum 0 maximum 255 value 255
+      }
+      Fl_Box {} {
+        label {Set Color:}
+        xywh {5 73 155 52}
+      }
+      Fl_Button {} {
+        label {Set One Point:}
+        callback {setonept()}
+        xywh {5 170 155 25}
+      }
+      Fl_Spinner xSpinner {
+        label {x:}
+        xywh {200 170 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner ySpinner {
+        label {y:}
+        xywh {305 170 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Button resetBtn {
+        label Reset
+        callback {reset()}
+        xywh {200 135 165 25}
+      }
+      Fl_Button SetRectangle {
+        label {Set Rectangle}
+        callback {setRectangle()}
+        xywh {5 205 155 55}
+      }
+      Fl_Spinner x0Spinner {
+        label {x0:}
+        xywh {200 205 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner y0Spinner {
+        label {y0:}
+        xywh {305 205 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner x1Spinner {
+        label {x1:}
+        xywh {200 236 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner y1Spinner {
+        label {y1:}
+        xywh {305 236 60 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Button setCircle {
+        label {Draw Circle}
+        callback {drawCircle()}
+        xywh {5 270 155 75}
+      }
+      Fl_Spinner xcSpinner {
+        label {center_x:}
+        xywh {235 271 55 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner ycSpinner {
+        label {center_y:}
+        xywh {235 296 55 24} minimum 0 maximum 10000 value 0
+      }
+      Fl_Spinner radiusSpinner {
+        label {radius:}
+        xywh {235 321 100 24} type Float minimum 0 maximum 10000 step 0.1
+      }
+      Fl_Button saveBtn {
+        label {Save Image}
+        callback {saveImage()}
+        xywh {5 430 155 35}
+      }
+      Fl_File_Input saveInput {
+        label {save:}
+        xywh {205 431 165 34}
+      }
+      Fl_Button readBtn {
+        label {Read Image}
+        callback {readImage()}
+        xywh {5 470 155 35}
+      }
+      Fl_File_Input readInput {
+        label {read:}
+        xywh {205 471 165 34}
+      }
+      Fl_Button animateBtn {
+        label Animation
+        callback {animation()}
+        xywh {5 510 155 45}
+      }
+      Fl_Button {} {
+        label {Draw Triangle}
+        callback {drawTriangle()}
+        xywh {5 350 155 75}
+      }
+      Fl_Spinner x00Spinner {
+        label {x0:}
+        xywh {200 351 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+      Fl_Spinner y00Spinner {
+        label {y0:}
+        xywh {305 351 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+      Fl_Spinner x11Spinner {
+        label {x1:}
+        xywh {200 376 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+      Fl_Spinner y11Spinner {
+        label {y1:}
+        xywh {305 375 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+      Fl_Spinner x22Spinner {
+        label {x2:}
+        xywh {200 401 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+      Fl_Spinner y22Spinner {
+        label {y2:}
+        xywh {305 400 60 24} type Float minimum -10000 maximum 10000 step 0.1 value 0
+      }
+    }
+  }
+  Function {} {open
+  } {
+    code {wrapper = new FrameBufferWrapper(640,480);} {}
+  }
+  Function {show()} {open
+  } {
+    code {uiwindow->show();} {}
+  }
+  Function {resize()} {open
+  } {
+    code {int width = widthSpinner->value();
+int height = heightSpinner->value();
+wrapper->resize(width,height);} {}
+  }
+  Function {setbgr()} {open
+  } {
+    code {unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+wrapper->setbgr(color);} {}
+  }
+  Function {setonept()} {open
+  } {
+    code {unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+unsigned int x = xSpinner->value();
+unsigned int y = ySpinner->value();
+wrapper->set(x,y,color);} {}
+  }
+  Function {reset()} {open
+  } {
+    code {wrapper->setbgr(0xFFFFFFFF);} {}
+  }
+  Function {setRectangle()} {open
+  } {
+    code {unsigned int x0 = x0Spinner->value();
+unsigned int y0 = y0Spinner->value();
+unsigned int x1 = x1Spinner->value();
+unsigned int y1 = y1Spinner->value();
+if (x0 > x1 || y0 > y1)
+	return;
+unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+wrapper->drawRectangle(x0,y0,x1,y1,color);} {}
+  }
+  Function {drawCircle()} {open
+  } {
+    code {unsigned int xc = xcSpinner->value();
+unsigned int yc = ycSpinner->value();
+float radius = radiusSpinner->value();
+unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+wrapper->drawCircle(xc,yc,radius,color);} {}
+  }
+  Function {saveImage()} {open
+  } {
+    code {const char *filepath = this->saveInput->value();
+if (wrapper->saveImage(filepath) == -1){
+	this->saveInput->value("Invalid Path!");
+}} {}
+  }
+  Function {readImage()} {open
+  } {
+    code {const char *filepath = this->readInput->value();
+if (wrapper->readImage(filepath) == -1){
+	this->readInput->value("Invalid Path!");
+}} {}
+  }
+  Function {animation()} {open
+  } {
+    code {unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+wrapper->animation(color);} {}
+  }
+  Function {drawTriangle()} {open
+  } {
+    code {int x0 = x00Spinner->value();
+int y0 = y00Spinner->value();
+int x1 = x11Spinner->value();
+int y1 = y11Spinner->value();
+int x2 = x22Spinner->value();
+int y2 = y22Spinner->value();
+unsigned int red = redSpinner->value();
+unsigned int green = greenSpinner->value();
+unsigned int blue = blueSpinner->value();
+unsigned int alpha = alphaSpinner->value();
+unsigned int color = red + (green << 8) + (blue << 16) + (alpha << 24);
+wrapper->drawTriangle(x0,y0,x1,y1,x2,y2,color);} {}
+  }
+}
