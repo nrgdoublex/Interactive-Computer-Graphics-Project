@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATRIX3D_H
+#define MATRIX3D_H
 
 #include <iostream>
 #include <cmath>
@@ -29,3 +30,5 @@ public:
 private:
   Vector3D rows[3];
 };
+
+#endif

@@ -1,4 +1,5 @@
 #include "FrameBuffer.h"
+#include "FrameBufferWrapper.h"
 
 FrameBuffer::FrameBuffer(int u0, int v0,
 	unsigned int width, unsigned int height) : Fl_Gl_Window(u0, v0, width, height, 0)
@@ -6,38 +7,136 @@ FrameBuffer::FrameBuffer(int u0, int v0,
   this->width = width;
   this->height = height;
 	this->pixel = new unsigned int[width*height];
+	this->zBuffer = new float[width*height];
+
 }
 
 FrameBuffer::~FrameBuffer()
 {
-	delete[] pixel;
+	delete [] pixel;
+	delete [] zBuffer;
 }
 
 void FrameBuffer::draw()
 {
-	glDrawPixels(this->width, this->height, GL_RGBA, GL_UNSIGNED_BYTE, this->pixel);
+	//glDrawPixels(this->width, this->height, GL_RGBA, GL_UNSIGNED_BYTE, this->pixel);
+	if (wrapper->renderid < 2)
+		wrapper->renderHW(wrapper->renderid);
+	else if (wrapper->renderid == 2)
+		wrapper->renderTexHW();
+	else if (wrapper->renderid == 3)
+		wrapper->renderGPU();
+		//wrapper->renderHWCubeMap();
+	//wrapper->renderTexHW();
 }
 
 void FrameBuffer::KeyboardHandle()
 {
-	float tstep = 3.0f;
-	float rstep = 3.0f;
+	float tstep = 1.0f;
+	float rstep = 1.0f;
 	int key = Fl::event_key();
 	switch (key) {
-	case FL_Left: {
-		cerr << "INFO: pressed left" << endl;
-		break;
-	}
-	case FL_Right: {
-		break;
-	}
-	case 'a': {
-		cerr << "INFO: pressed a" << endl;
-		break;
-	}
-	default:
-		cerr << "INFO: do not understand keypress" << endl;
-	}
+		case FL_Left: {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->getb(),tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->pan(-tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case FL_Right: {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->getb(),-tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->pan(tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case FL_Up: {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->geta(),-tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->tilt(-tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case FL_Down: {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->geta(),tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->tilt(tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case 'w': {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->geta(),-tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->tilt(-tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case 's': {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->geta(),tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->tilt(tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case 'a': {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->getb(),tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->pan(-tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case 'd': {
+			PPC *ppc = wrapper->ppc;
+			Vector3D newC = ppc->getC();
+			newC.RotateArbitraryDirection(ppc->getb(),-tstep*5);
+			// commit the new values
+			ppc->setC(newC);
+			ppc->pan(tstep*5);
+
+			wrapper->renderAll();
+			break;
+		}
+		case 'q': {
+			wrapper->ppc->row(tstep*5);
+			wrapper->renderAll();
+			break;
+		}
+		case 'e': {
+			wrapper->ppc->row(-tstep*5);
+			wrapper->renderAll();
+			break;
+		}
+		default:
+			cerr << "INFO: do not understand keypress" << endl;
+		}
 }
 
 int FrameBuffer::handle(int event)
@@ -63,6 +162,20 @@ unsigned int FrameBuffer::getheight()
 	return this->height;
 }
 
+unsigned int FrameBuffer::getColorFromVector(Vector3D vc)
+{
+	unsigned int ret = 0xFF000000;
+	unsigned char *rgba = (unsigned char*)&ret;
+	for (int i = 0; i < 3; i++) {
+		int ichan = (int)(255.0f*vc[i]);
+		ichan = (ichan < 0) ? 0 : ichan;
+		ichan = (ichan > 255) ? 255 : ichan;
+		rgba[i] = ichan;
+	}
+
+	return ret;
+}
+
 void FrameBuffer::setBGR(unsigned int bgr)
 {
 	for (int uv = 0; uv < this->width*this->height; uv++)
@@ -71,6 +184,10 @@ void FrameBuffer::setBGR(unsigned int bgr)
 
 void FrameBuffer::set(unsigned int x, unsigned int y, unsigned int color) {
 	this->pixel[(this->height - 1 - y)*this->width + x] = color;
+}
+
+unsigned int FrameBuffer::get(unsigned int x, unsigned int y) {
+	return this->pixel[(this->height - 1 - y)*this->width + x];
 }
 
 void FrameBuffer::setGuarded(unsigned int x, unsigned int y, unsigned int color) {
@@ -108,8 +225,25 @@ void FrameBuffer::drawCircle(unsigned int xc, unsigned int yc, float r, unsigned
 	for (int v = top; v <= bottom; v++) {
 		for (int u = left; u <= right; u++) {
 			Vector3D cpc(.5f + (float)u, .5f + (float)v, 0.0f);
-			if ((cpc - cc).Length() <= r)
-				setGuarded(u, v, color);
+			if ((cpc - cc).Length() < r)
+				setzBuffer(cpc, color);
+		}
+	}
+}
+
+void FrameBuffer::drawCircle(Vector3D c, float r, Vector3D cv) {
+
+	int left = (int)(c[0] - r);
+	int right = (int)(c[0] + r);
+	int top = (int)(c[1] - r);
+	int bottom = (int)(c[1] + r);
+	unsigned int color = 0xFF0000FF;
+	for (int v = top; v <= bottom; v++) {
+		for (int u = left; u <= right; u++) {
+			Vector3D currp(.5f+(float)u, .5f + (float) v, c[2]);
+			if ((currp - c).Length() < r) {
+				setzBuffer(currp, color);
+			}
 		}
 	}
 }
@@ -167,4 +301,93 @@ void FrameBuffer::drawTriangle(float x0, float y0, float x1, float y1, float x2,
 		currEELS[1] += b[1];
 		currEELS[2] += b[2];
 	}
+}
+
+void FrameBuffer::draw2DSegment(Vector3D p0, Vector3D p1, Vector3D c0, Vector3D c1)
+{
+
+	float du = fabsf(p0[0] - p1[0]);
+	float dv = fabsf(p0[1] - p1[1]);
+	int stepsN;
+	if (du > dv) {
+		stepsN = (int)(du + 2);
+	}
+	else {
+		stepsN = (int)(dv + 2);
+	}
+
+	Vector3D duv = (p1 - p0) / (float)stepsN;
+	Vector3D dc = (c1 - c0) / (float)stepsN;
+	for (int stepi = 0; stepi < stepsN; stepi++) {
+		Vector3D currp = p0 + duv * (float) stepi;
+		Vector3D currc = c0 + dc * (float) stepi;
+		this->setzBuffer(currp, getColorFromVector(currc));
+	}
+
+}
+
+void FrameBuffer::draw3DSegment(Vector3D p0, Vector3D p1, Vector3D c0, Vector3D c1, PPC *ppc)
+{
+
+	Vector3D pp0, pp1;
+	if (!ppc->project(p0, pp0))
+		return;
+	if (!ppc->project(p1, pp1))
+		return;
+	this->draw2DSegment(pp0, pp1, c0, c1);
+}
+
+void FrameBuffer::setzBuffer(Vector3D pt, unsigned int color)
+{
+	int u = (int)pt[0];
+	int v = (int)pt[1];
+	if (u < 0 || v < 0 || u > this->width - 1 || v > this->height - 1)
+		return;
+	int uv = (this->height - 1 - v)*this->width + u;
+	if (this->zBuffer[uv] > pt[2])
+		return;
+	this->zBuffer[uv] = pt[2];
+
+	set(pt[0],pt[1], color);
+}
+
+void FrameBuffer::clear(unsigned int bgr, float z0)
+{
+	setBGR(bgr);
+	for (int i=0;i<this->width*this->height;i++)
+		this->zBuffer[i] = z0;
+}
+
+void FrameBuffer::visualizePPC(PPC *targetPPC, PPC *visualPPC, float flen)
+{
+	float ptSize = 7.0f;
+
+	Vector3D red(1.0f, 0.0f, 0.0f);
+	Vector3D black(0.0f, 0.0f, 0.0f);
+	Vector3D center = targetPPC->getC();
+	this->draw3DPoint(center, red, ptSize, visualPPC);
+	float scf = flen / targetPPC->getFocal();
+
+	this->draw3DSegment(center, center + targetPPC->getc()*scf, red, black, visualPPC);
+
+	Vector3D cs[4];
+	float width = targetPPC->getWidth();
+	float height = targetPPC->getHeight();
+	cs[0] = targetPPC->get3DPoint(0.0f, 0.0f, flen);
+	cs[1] = targetPPC->get3DPoint((float)width, 0.0f, flen);
+	cs[2] = targetPPC->get3DPoint((float)width, (float)height, flen);
+	cs[3] = targetPPC->get3DPoint(0.0f, (float)height, flen);
+
+	for (int i = 0; i < 4; i++) {
+		int _i = (i + 1) % 4;
+		this->draw3DSegment(cs[i], cs[_i], black, black, visualPPC);
+	}
+}
+
+void FrameBuffer::draw3DPoint(Vector3D p, Vector3D c, float psize, PPC *ppc) {
+
+	Vector3D pp;
+	if (!ppc->project(p, pp))
+		return;
+	drawCircle(pp, psize, c);
 }

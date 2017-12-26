@@ -1,16 +1,19 @@
-#pragma once
+#ifndef VECTOR3D_H
+#define VECTOR3D_H
 
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
 
-#define PI (3.1415926)
+#define PI (3.1415926f)
 
 using namespace std;
 
 class Vector3D{
 public:
+  float xyz[3];
+
   Vector3D();
   Vector3D(float x, float y, float z);              //(a.)
   float& operator[](int idx);                       //(b.)
@@ -31,5 +34,7 @@ public:
   /* auxiliary functions */
   Vector3D& Set(Vector3D another);
 private:
-  float xyz[3];
+
 };
+
+#endif
